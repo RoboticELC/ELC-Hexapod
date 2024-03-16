@@ -64,7 +64,7 @@ void startDirection() {
   if (startHeadings != 180) {
     if (startHeadings < 180) {
       for (int i = 0; i <= 359; i++) {
-        headingaSadow[i] = 180 - startHeadings + i;
+        headingaSadow[i] = 180 - startHeadings + i; //arah pantat
         if (headingaSadow[i] > 359) headingaSadow[i] -= 360;
       }
     }
