@@ -6,11 +6,9 @@ To begin, please install the library > Library Hexapod 2024, the package include
 - NewPing
 - Adafruit VL53L0X (ToF/Distance sensor, file: 4_Sensor)
 - Arduino EEPROMEx-master: data storage for reading and writing basic types, structs, strings, arrays
-- MPU 6050 Sensor
+- Simple MPU 6050 Sensor
 - Servo
 - QMC5883L Compass Meter
-
-### Undisclosed Libraries:
 - RemoteXY (location mapping for x and y axis w/ RemoteXY library)
 
 ### Hardware yang disetting rujuk dari ```pinMode```

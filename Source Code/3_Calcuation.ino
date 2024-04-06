@@ -10,7 +10,7 @@ float bL = 150; // body Lengh
 float teta = 68.19;
 
 byte olds = 0;
-void smoothness(byte s) {
+void smoothness(byte s) { //smoothness dr pergerakan, menentukan kecepatan putar servo
   if (olds != s) {
     in_nOS = s * 12;
     perStep = in_nOS / 2;
@@ -30,7 +30,7 @@ void smoothness(byte s) {
   }
 }
 float oldGama = 0;
-void initialisai() {
+void initialisai() { //inisialisasi posisi2 awal dr servo dan robot
   smoothness(in_smoothness);
   if (oldGama != in_gama) {
     feetPos_x[1] = cos((teta - in_gama) / float(180) * PI) * (cx + fm);
@@ -68,7 +68,7 @@ void initialisai() {
   }
 }
 
-void staticMovement(int fn) {
+void staticMovement(int fn) { //mungkin pergerakan tanpa pindah lokasi (muter badan, hadap kanan/kiri)
   initialisai();
   pos_x[fn] = in_px;
   pos_y[fn] = in_py;
@@ -79,7 +79,7 @@ void staticMovement(int fn) {
   cal_IK(pos_x[fn], pos_y[fn],  pos_z[fn], pos_a[fn], pos_b[fn], pos_g[fn], fn);
 }
 
-void dinamicMovement(byte fn) {
+void dinamicMovement(byte fn) { //kebalikan static, mungkin jalan kemana
   initialisai();
   gaitCal(fn);  trajectoryCal(fn);
   if (fn < 4) {
@@ -118,7 +118,7 @@ float bodyIK_x[7], bodyIK_z[7], bodyIK_y[7];
 float new_pos_x[7], new_pos_y[7], new_pos_z[7];
 float cxFeetDistance[7];
 
-void cal_IK(float px, float py, float pz, float Pitch, float Roll, float yaw, int fn) {
+void cal_IK(float px, float py, float pz, float Pitch, float Roll, float yaw, int fn) { //rumus
   //=========Body IK============
   pos_x[fn] = px;
   pos_y[fn] = py;
