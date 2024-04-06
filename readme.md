@@ -40,6 +40,7 @@ To begin, please install the library > Library Hexapod 2024, the package include
 
 ### Loop: ```void loop()```
 - aktifkan ```pushButton()```
+- demo digerakan oleh variabel ```runSt```
 - aktifkan ```demo_01()```
 - ```INACTIVE``` aktifkan ```demo_02()```
 - ```INACTIVE``` aktifkan ```demo_03()```
