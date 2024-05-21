@@ -40,12 +40,12 @@ const double Z_Rest = -80.0;
 // Kaki kanan (ini di daerah +)
 double JXActR = 0.0;  // -20 <= x <= 20  (titik 0 adalah 0 derajat dengan sumbu x) 0
 double JYActR = 0.0;   // 0 <= y <= 7  (menjauh -> mendekat body) 0
-double JZActR = 0;  // -7 <= z <= 120 (naik -> turun)  -7
+double JZActR = 0.0;  // -7 <= z <= 120 (naik -> turun)  -7
 
 // Kaki kiri (ini di daerah -)
 double JXActL = 0.0;  // -20 <= x <= 20  (titik 0 adalah 0 derajat dengan sumbu x) 0
 double JYActL = 0.0;   // -5 <= y <= 8  (mendekat -> menjauh body) 40
-double JZActL = 0;  // -7 <= z <= 10 (naik -> turun) 70
+double JZActL = 0.0;  // -7 <= z <= 10 (naik -> turun) 70
 
 rampDouble J1Tar = 0.0;
 rampDouble J2Tar = -10.0;
@@ -88,16 +88,23 @@ void setup() {
 //  coxa[5].write (90);
 //  coxa[6].write (90+45);
 
-    CartesianMoveLeg (JXActL, JYActL, JZActL, 1, 3);
-    CartesianMoveLeg (JXActR, JYActR, JZActR, 4, 6);
+    // Berdiri
+    for (int i = 1; i < 7; i++) {
+
+      if (i > 3) {
+        CartesianMoveLeg (JXActL, JYActL, JZActL, i);
+      }
+      else {
+        CartesianMoveLeg (JXActR, JYActR, JZActR, i);
+      }
+    }
 //
-//    delay (2000);
+    delay (2000);
   
 }
 
 void loop() {
   // put your main code here, to run repeatedL_Oy:
-     
   
 //    int deg_tibia_kanan;
       
@@ -171,37 +178,7 @@ void loop() {
   
 }
 
-void CartesianMove1Leg (double X, double Y, double Z) {
-  
-  // OFFSET TO REST POSITION
-
-  Y += Y_Rest;
-  Z += Z_Rest;
-
-  double deg_cox = atan (X / Y) * (180 / PI);
-  double H = sqrt ((Y * Y) + (X * X));
-  double L_O = sqrt ((H * H) + (Z * Z));
-  double deg_tibia = acos (   ((L_TF * L_TF) + (L_TO * L_TO) - (L_O * L_O))   /   (2 * L_TF * L_TO)   ) * (180 / PI);
-  double B = acos (((L_O * L_O) + (L_TF * L_TF) - (L_TO * L_TO))   /   (2 * L_O * L_TF)   ) * (180 / PI);
-  double A = atan (Z / H) * (180 / PI); 
-  double deg_femur = (B + A);
-
-  UpdatePosition1 (deg_cox, deg_femur, deg_tibia);
-
-}
-
-void UpdatePosition1 (double deg1, double deg2, double deg3) {
-  
-  // MOVE TO POSITION
-  
-  coxa[6].write (90+45 - deg1);
-  femur[6].write (90 - deg2);
-  tibia[6].write (deg3 + deg_TibiaLag - 45);  
-  delay (100);
-  
-}
-
-void CartesianMoveLeg (double X, double Y, double Z, int a, int b) {
+void CartesianMoveLeg (double X, double Y, double Z, int i) {
   
   // OFFSET TO REST POSITION
 
@@ -216,24 +193,22 @@ void CartesianMoveLeg (double X, double Y, double Z, int a, int b) {
   double A = atan (Z / H) * (180 / PI);  
   double deg_femur = (B + A);  
   
-  UpdatePosition (deg_cox, deg_femur, deg_tibia, a, b);
+  UpdateCartesian (deg_cox, deg_femur, deg_tibia, i);
 
 }
 
-void UpdatePosition (double deg1, double deg2, double deg3, int a, int b) {
+void UpdateCartesian (double deg1, double deg2, double deg3, int i) {
   
   // MOVE TO POSITION
   
-  for (int i = a; i <= b; i++) {
-    if (i > 3) {
-      femur[i].write (45 - deg2);
-      tibia[i].write (deg3 + deg_TibiaLag - 90 ); 
-    }
-    else {
-      femur[i].write (90 - deg2);
-      tibia[i].write (deg3 + deg_TibiaLag - 45); 
-    }
-  }
+   if (i > 3) {
+     femur[i].write (45 - deg2);
+     tibia[i].write (deg3 + deg_TibiaLag - 90 ); 
+   }
+   else {
+     femur[i].write (90 - deg2);
+     tibia[i].write (deg3 + deg_TibiaLag - 45); 
+   }
 
   coxa[1].write (90+45 - deg1);
   coxa[2].write (90 - deg1);
