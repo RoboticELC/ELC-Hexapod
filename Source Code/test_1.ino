@@ -338,8 +338,8 @@ void Gerak_Maju () {
       delay (interval);
 //    
     //------------------------------------// Pasangan 1 tancap
-      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 1);    
-      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 3);   
+      CartesianMoveLeg (-25+diff_x,0+diff_y,-1, 1);    
+      CartesianMoveLeg (-25+diff_x,0+diff_y,-1, 3);   
       CartesianMoveLeg (28+diff_x,0+diff_y,-1, 5);
       delay (interval);
 //
@@ -363,7 +363,7 @@ void Gerak_Maju () {
     //------------------------------------// Pasangan 2 tancap
       CartesianMoveLeg (28+diff_x,0+diff_y,-1, 4);    
       CartesianMoveLeg (28+diff_x,0+diff_y,-1, 6);   
-      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 2);
+      CartesianMoveLeg (-25+diff_x,0+diff_y,-1, 2);
       delay (interval);
       
   
