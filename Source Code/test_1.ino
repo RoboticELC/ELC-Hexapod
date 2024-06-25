@@ -1,15 +1,23 @@
 #include <MPU6050.h>
-
 #include <Adafruit_MPU6050.h>
-
 #include <Wire.h>
 #include <Servo.h>
 #include <Math.h>
 #include <Ramp.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
-#include <QMC5883LCompass.h>
 #include <NewPing.h>
+#include <VL53L0X.h>
+#include <QMC5883LCompass.h>
+QMC5883LCompass compass;
+byte compasSt = 0;
+int azimuth;
+int fAzimuth;
+byte bearing;
+byte new_bearing;
+float startHeadings;
+float headingaSadow[361];
+float relativeHeadings;
 #define nOP 5 //number of ping
 
 //SoftwareSerial hc06(0,1);
@@ -17,6 +25,9 @@
 Servo coxa[7];
 Servo femur[7];
 Servo tibia[7];
+
+VL53L0X sensor_L;
+VL53L0X sensor_R;
 
 int tPin[] = {29, 25, 44, 43, 17};
 int ePin[] = {27, 24, 42, 41, 16};
@@ -76,9 +87,8 @@ rampDouble J3Tar = 40.0;
 const double deg_TibiaLag = 15.4; 
 
 char dataRead, tampung;
-int diff_y=1,a,akeep,anew,anewkeep;
-int stepbelok_x=10,stepbelok_z=20;
-QMC5883LCompass compass;
+int diff_y=1,diff_x,a,akeep,anew,anewkeep;
+int stepbelok_x=10,stepbelok_z=50;
 
 void setup() {
   // put your setup code here, to run once:
@@ -91,8 +101,8 @@ void setup() {
   Serial3.begin (9600);
   Serial.begin (9600);
   //hc06.begin(9600);
-  compass.init();
-  hitungcompass();
+  setupCompass();
+  setup_tof();
   akeep=a;
 
   for (int i = 0; i < 7; i++) {
@@ -142,59 +152,66 @@ void Berdiri () {
   
 }
 
+int D_dpn,D_blkg,D_kiri,D_kanan;
 void loop() {
   // put your main code here, to run repeatedL_Oy:
-  //hitungcompass();
-  anew=a-akeep+180;
 
-  Gerak_Maju ();
-  getDistancePing(0);
-  getDistancePing(1);
-  //tof(1);
-  //tof(2);
+  //Gerak_Maju ();
+  D_blkg=getDistancePing(0);//cm
+  D_dpn=getDistancePing(1);//cm
+  D_kiri=sensor_L.readRangeContinuousMillimeters()-30;//mm
+  D_kanan=sensor_R.readRangeContinuousMillimeters()-50;//mm
   
-  //Belok_Kanan();
-  //jalan lurus
-  /*if(a>65 || a<200) //karna antara 65-200 kompas terlalu sensi
-  {
-    if(anew>160 || anew<200)
-      Gerak_Maju();
-    else if(anew<160)
-      while(anew<175)
-      {
-        Belok_Kanan();
-        hitungcompass();
-        anew=a-akeep;
-      }
+  Serial.print("L= ");
+  Serial.print(D_kiri);
+  Serial.print(" |R= ");
+  Serial.print(D_kanan);
+  Serial.print(" |D= ");
+  Serial.print(D_dpn);
+  Serial.print(" |B= ");
+  Serial.println(D_blkg);
 
-    else if(anew>200)
-      while(anew>185)
-      {
-        Belok_Kiri();
-        hitungcompass();
-        anew=a-akeep;
-      }
-  }
-  else //kurang sensi
-  {
-    if(anew>175 || anew<185)
-      Gerak_Maju();
-    else if(anew<175)
-      while(anew<178)
-      {
-        Belok_Kanan();
-        hitungcompass();
-        anew=a-akeep;
-      }
+  getDirection();
+  Serial.println(bearing);
 
-    else if(anew>185)
-      while(anew>182)
-      {
-        Belok_Kiri();
-        hitungcompass();
-        anew=a-akeep;
-      }
-  }*/
+
+
+  // if(D_dpn>15)
+  // {
+  //   if(D_kanan<90) diff_x=(-2);
+  //   else if(D_kiri<90) diff_x=2;
+  //   else diff_x=0;
+  // }
+  // else
+  // {
+  //   if(D_kanan>400) 
+  //   {
+  //     getDirection();
+  //     new_bearing=bearing+3;
+  //     if (new_bearing>16) new_bearing-=16;
+
+  //     while(bearing!=new_bearing)
+  //     {
+  //       getDirection();
+  //       Belok_Kanan();
+  //     }
+  //   }
+  //   else if(D_kiri>400) 
+  //   {
+  //     getDirection();
+  //     new_bearing=bearing-3;
+  //     if (new_bearing<0) new_bearing+=16;
+
+  //     while(bearing!=new_bearing)
+  //     {
+  //       getDirection();
+  //       Belok_Kiri();
+  //     }
+  //   }
+  // }
+
+
+
 }
 
 void Belok_Kanan () {
@@ -321,9 +338,9 @@ void Gerak_Maju () {
       delay (interval);
 //    
     //------------------------------------// Pasangan 1 tancap
-      CartesianMoveLeg (-25,0+diff_y,-1, 1);    
-      CartesianMoveLeg (-25,0+diff_y,-1, 3);   
-      CartesianMoveLeg (28,0+diff_y,-1, 5);
+      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 1);    
+      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 3);   
+      CartesianMoveLeg (28+diff_x,0+diff_y,-1, 5);
       delay (interval);
 //
       //------------------------------------// Pasangan 2 angkat
@@ -344,9 +361,9 @@ void Gerak_Maju () {
       delay (interval);
 //    
     //------------------------------------// Pasangan 2 tancap
-      CartesianMoveLeg (28,0+diff_y,-1, 4);    
-      CartesianMoveLeg (28,0+diff_y,-1, 6);   
-      CartesianMoveLeg (-25,0+diff_y,-1, 2);
+      CartesianMoveLeg (28+diff_x,0+diff_y,-1, 4);    
+      CartesianMoveLeg (28+diff_x,0+diff_y,-1, 6);   
+      CartesianMoveLeg (-25-diff_x,0+diff_y,-1, 2);
       delay (interval);
       
   
@@ -435,15 +452,31 @@ void CartesianMoveLeg (double X, double Y, double Z, int i) {
 void UpdateCartesian (double deg1, double deg2, double deg3, int i) {
   
   // MOVE TO POSITION
-  
-   if (i > 3) {
-     femur[i].write (map(90 - deg2,40,180,140,0));
-     tibia[i].write (map(deg3 + deg_TibiaLag - 45,180,30,0,150 )); 
-   }
-   else {
-     femur[i].write (90 - deg2);
-     tibia[i].write (deg3 + deg_TibiaLag - 45); 
-   }
+  int femur_deg,tibia_deg,coxa_deg;
+    if (i > 3) {
+      femur_deg = map(90 - deg2,40,180,140,0);
+      if(femur_deg>140) femur_deg=140;
+      else if (femur_deg<0) femur_deg=0;
+
+      tibia_deg = map(deg3 + deg_TibiaLag - 45,180,30,0,150 );
+      if(tibia_deg>150) tibia_deg=150;
+      else if (tibia_deg<0) tibia_deg=0;
+
+      femur[i].write (femur_deg);
+      tibia[i].write (tibia_deg); 
+    }
+    else {
+      femur_deg = 90 - deg2;
+      if(femur_deg>180) femur_deg=180;
+      else if (femur_deg<40) femur_deg=40;
+
+      tibia_deg = deg3 + deg_TibiaLag - 45;
+      if(tibia_deg>180) tibia_deg=180;
+      else if (tibia_deg<30) tibia_deg=30;
+
+      femur[i].write (90 - deg2);
+      tibia[i].write (deg3 + deg_TibiaLag - 45); 
+    }
 
    if (i == 1 || i == 6) {
      coxa[i].write (90+45 - deg1);
@@ -467,24 +500,104 @@ void UpdateCartesian (double deg1, double deg2, double deg3, int i) {
   
 }
 
-void hitungcompass() {
-  // Read compass values
-  compass.read();
-
-  // Return Azimuth reading
-  a = compass.getAzimuth();
-  if(a<0)
-  {
-    a=360+a;
-  }
-
- Serial.print("A: ");
-  Serial.print(a);
-  Serial.println();
-}
-
 float getDistancePing(byte n) {
-  distancePing[n] = pinG[n].ping() / 57.0;
-  if (distancePing[n] == 0) distancePing[n] = dMax[n];///10;
-  return distancePing[n];
+  float distancePing = pinG[n].ping() / 57.0;
+  if (distancePing == 0) distancePing = dMax[n];///10;
+  return distancePing;
 }
+
+
+void setup_tof()
+{
+  pinMode(A13, OUTPUT); digitalWrite(A13, LOW);
+  pinMode(26, OUTPUT); digitalWrite(26, LOW);
+  Wire.begin();
+
+  delay(100);
+  digitalWrite(26, HIGH);
+  delay(150);
+  sensor_L.init(true);
+  delay(100);
+  sensor_L.setAddress((uint8_t)01);
+  delay(100);
+
+  digitalWrite(A13, HIGH);
+  delay(150);
+  sensor_R.init(true);
+  delay(100);
+  sensor_R.setAddress((uint8_t)02);
+  delay(100);
+
+  sensor_L.startContinuous();
+  sensor_R.startContinuous();
+  int tofSt = 1;
+  Serial.println("setupTof ");
+}
+
+void setupCompass() {
+  compass.init();
+  compass.setCalibrationOffsets(723.00, -471.00, 469.00);
+  compass.setCalibrationScales(0.79, 0.80, 2.04);
+
+  //================
+  compasSt = 1;
+  //delay(100);
+  startDirection();
+  //delay(100);
+  Serial.println("setupCompass ");
+}
+
+void getDirection() {
+  //char direction[3];
+  compass.read();
+  azimuth = compass.getAzimuth();
+  fAzimuth = compass.getAzimuth();
+  bearing = compass.getBearing(azimuth);
+  //compass.getDirection(direction, azimuth);
+}
+void testBacaArah(){
+  getDirection();
+  azimuth = compass.getAzimuth();
+  Serial.print("azimuth "); Serial.println(azimuth);
+  //Serial.print("azimuth "); Serial.println(azimuth);
+}
+void makeHeadingShadow() {
+  getDirection();
+  if (azimuth >= 0) {
+    fAzimuth = azimuth;// - (22.5 * bearing);
+  } else {
+    fAzimuth = (azimuth + 360);// - (22.5 * bearing);
+  }
+}
+
+void startDirection() {
+  makeHeadingShadow();
+  startHeadings = azimuth;
+  int x = startHeadings;
+  if (startHeadings != 180) {
+    if (startHeadings < 180) {
+      for (int i = 0; i <= 359; i++) {
+        headingaSadow[i] = 180 - startHeadings + i; //arah pantat disimpan diarray?
+        if (headingaSadow[i] > 359) headingaSadow[i] -= 360;
+      }
+    }
+    if (startHeadings >= 180) {
+      for (int i = 0; i <= 359; i++) {
+        headingaSadow[i] = 180 - startHeadings + i;
+        if (headingaSadow[i] < 0 ) headingaSadow[i] += 360;
+      }
+    }
+  } else {
+    for (int i = 0; i <= 359; i++) {
+      headingaSadow[i] = i;
+    }
+  }
+  Serial.print("startHeadings "); Serial.println(startHeadings); // Serial.print("/");
+  Serial.print("bearing "); Serial.println(bearing); //Serial.print("/");
+}
+
+void getRelativeHeadings() {
+  makeHeadingShadow();
+  relativeHeadings = 180 - headingaSadow[fAzimuth];
+}
+
