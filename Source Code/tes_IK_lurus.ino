@@ -88,7 +88,7 @@ rampDouble J3Tar = 40.0;
 const double deg_TibiaLag = 15.4; 
 
 char dataRead, tampung;
-int diff_y=1,diff_lx,diff_rx,a,akeep,anew,anewkeep;
+int diff_y=0,diff_lx,diff_rx,a,akeep,anew,anewkeep;
 int stepbelok_x=10,stepbelok_z=40;
 
 void setup() {
@@ -131,12 +131,22 @@ void setup() {
   coxa[4].write (90-45);
   coxa[5].write (90);
   coxa[6].write (90+45);
-  //delay (50000000);
+ //delay (50000000);
 
 
-  Berdiri ();
+  //Berdiri ();
   beep();
-  delay (4000);
+  //delay (4000);
+  //berdiri tangga
+  CartesianMoveLeg (50,-20,-5, 1);   
+  CartesianMoveLeg (20,diff_y,0, 3);   
+  CartesianMoveLeg (-40,diff_y,0, 5);
+  CartesianMoveLeg (-50,-20,-5, 4);  
+  CartesianMoveLeg (-20,diff_y,0, 6);   
+  CartesianMoveLeg (40,diff_y,0, 2);
+
+
+  delay (5000);
     
 }
 
@@ -158,73 +168,70 @@ void Berdiri () {
 int D_dpn,D_blkg,D_kiri,D_kanan;
 void loop() {
   // put your main code here, to run repeatedL_Oy:
-
-  Gerak_Maju ();
+  Gerak_Tangga2();
   //Belok_Kanan ();
-  D_blkg=getDistancePing(0);//cm
-  D_dpn=getDistancePing(1);//cm
-  D_kiri=sensor_L.readRangeContinuousMillimeters()-30;//mm
-  D_kanan=sensor_R.readRangeContinuousMillimeters()-50;//mm
+  // D_blkg=getDistancePing(0);//cm
+  // D_dpn=getDistancePing(1);//cm
+  // D_kiri=sensor_L.readRangeContinuousMillimeters()-30;//mm
+  // D_kanan=sensor_R.readRangeContinuousMillimeters()-50;//mm
   
-  // Serial.print("L= ");
-  // Serial.print(D_kiri);
-  // Serial.print(" |R= ");
-  // Serial.print(D_kanan);
-  // Serial.print(" |D= ");
-  // Serial.print(D_dpn);
-  // Serial.print(" |B= ");
-  // Serial.println(D_blkg);
+  // // Serial.print("L= ");
+  // // Serial.print(D_kiri);
+  // // Serial.print(" |R= ");
+  // // Serial.print(D_kanan);
+  // // Serial.print(" |D= ");
+  // // Serial.print(D_dpn);
+  // // Serial.print(" |B= ");
+  // // Serial.println(D_blkg);
 
-  getDirection();
-  Serial.println(bearing);
+  // getDirection();
+  // Serial.println(bearing);
 
+  // if(D_dpn>15)
+  // {
+  //   if(D_kanan<70) 
+  //   {
+  //     diff_lx=(-10);
+  //     //beep();
+  //   }
+  //   else if(D_kiri<70) 
+  //   {
+  //     diff_rx=10;
+  //     //beep();beep();
+  //   }
+  //   else 
+  //   {
+  //     diff_rx=0;
+  //     diff_lx=0;
+  //   }
+  // }
+  // else
+  // {
+  //   if(D_kanan>400) 
+  //   {
+  //     getDirection();
+  //     new_bearing=bearing+3;
+  //     if (new_bearing>16) new_bearing-=16;
 
+  //     while(bearing!=new_bearing)
+  //     {
+  //       getDirection();
+  //       Belok_Kanan();
+  //     }
+  //   }
+  //   else if(D_kiri>400) 
+  //   {
+  //     getDirection();
+  //     new_bearing=bearing-3;
+  //     if (new_bearing<0) new_bearing+=16;
 
-  if(D_dpn>15)
-  {
-    if(D_kanan<70) 
-    {
-      diff_lx=(-10);
-      //beep();
-    }
-    else if(D_kiri<70) 
-    {
-      diff_rx=10;
-      //beep();beep();
-    }
-    else 
-    {
-      diff_rx=0;
-      diff_lx=0;
-    }
-  }
-  else
-  {
-    if(D_kanan>400) 
-    {
-      getDirection();
-      new_bearing=bearing+3;
-      if (new_bearing>16) new_bearing-=16;
-
-      while(bearing!=new_bearing)
-      {
-        getDirection();
-        Belok_Kanan();
-      }
-    }
-    else if(D_kiri>400) 
-    {
-      getDirection();
-      new_bearing=bearing-3;
-      if (new_bearing<0) new_bearing+=16;
-
-      while(bearing!=new_bearing)
-      {
-        getDirection();
-        Belok_Kiri();
-      }
-    }
-  }
+  //     while(bearing!=new_bearing)
+  //     {
+  //       getDirection();
+  //       Belok_Kiri();
+  //     }
+  //   }
+  // }
 
 
 
@@ -438,13 +445,117 @@ void Gerak_Mundur () {
   
 }
 
+void Gerak_Tangga()
+{
+       int interval=2000;
+    //------------------------------------// Pasangan 1 angkat
+      CartesianMoveLeg (50,-20,40, 1);   
+      CartesianMoveLeg (20,diff_y,40, 3);   
+      CartesianMoveLeg (-40,diff_y,40, 5);
+//    
+    //------------------------------------// Pasangan 2 dorong belakang
+      CartesianMoveLeg (-50,-20,-5, 4);  
+      CartesianMoveLeg (-20,diff_y,-2, 6);   
+      CartesianMoveLeg (40,diff_y,0, 2);
+      delay (interval);
+//
+    //------------------------------------// Pasangan 1 geser
+      CartesianMoveLeg (5,-20,40, 1);  
+      CartesianMoveLeg (-25,-20,40, 3);
+      CartesianMoveLeg (5,diff_y,40, 5);
+      delay (interval);
+//    
+    //------------------------------------// Pasangan 1 tancap
+      CartesianMoveLeg (5,-20,-10, 1);  
+      CartesianMoveLeg (-25,-20,-2, 3);
+      CartesianMoveLeg (5,diff_y,-2, 5);
+      delay (interval);
+//
+      //------------------------------------// Pasangan 2 angkat
+      CartesianMoveLeg (-50,-20,40, 4);  
+      CartesianMoveLeg (-20,diff_y,40, 6);   
+      CartesianMoveLeg (40,diff_y,40, 2);
+//
+      //------------------------------------// Pasangan 1 dorong belakang
+      CartesianMoveLeg (50,-20,-5, 1);   
+      CartesianMoveLeg (20,diff_y,-2, 3);   
+      CartesianMoveLeg (-40,diff_y,0, 5);
+      delay (interval);
+   
+    //------------------------------------// Pasangan 2 geser
+      CartesianMoveLeg (0,-20,40, 4);  
+      CartesianMoveLeg (30,-20,40, 6);   
+      CartesianMoveLeg (-10,diff_y,40, 2);
+      delay (interval);
+//    
+    //------------------------------------// Pasangan 2 tancap
+      CartesianMoveLeg (0,-20,-10, 4);  
+      CartesianMoveLeg (30,-20,-2, 6);   
+      CartesianMoveLeg (-10,diff_y,-2, 2);
+      delay (interval);
+}
+
+void Gerak_Tangga2()
+{
+    int interval=1000;    
+    //------------------------------------// Pasangan 2 dorong belakang
+      CartesianMoveLeg (-50,-20,-5, 4);  
+      CartesianMoveLeg (-20,diff_y,-2, 6);   
+      CartesianMoveLeg (40,diff_y,0, 2);
+      delay (interval);
+//
+    //------------------------------------// Pasangan 1 angkat
+      CartesianMoveLeg (50,-20,40, 1);   
+      CartesianMoveLeg (20,diff_y,40, 3);   
+      CartesianMoveLeg (-40,diff_y,40, 5);
+      delay (interval);
+//             
+
+    //------------------------------------// Pasangan 1 geser
+      CartesianMoveLeg (5,-15,40, 1);  
+      CartesianMoveLeg (-21,-20,40, 3);
+      CartesianMoveLeg (1,diff_y,40, 5);
+      delay (interval);
+//    
+    //------------------------------------// Pasangan 1 tancap
+        CartesianMoveLeg (5,-15,-15, 1);  
+        CartesianMoveLeg (-21,-20,-2, 3);
+        CartesianMoveLeg (10,diff_y,-2, 5);
+      delay (interval);
+//
+      //------------------------------------// Pasangan 2 angkat
+      CartesianMoveLeg (-50,-20,40, 4);  
+      CartesianMoveLeg (-20,diff_y,40, 6);   
+      CartesianMoveLeg (40,diff_y,40, 2);
+      
+//
+      //------------------------------------// Pasangan 1 dorong belakang
+      CartesianMoveLeg (50,-20,-5, 1);   
+      CartesianMoveLeg (20,diff_y,-2, 3);   
+      CartesianMoveLeg (-40,diff_y,0, 5);
+      delay (interval);
+//   
+//     //------------------------------------// Pasangan 2 geser
+//       CartesianMoveLeg (-15,-20,40, 4);  
+//       CartesianMoveLeg (25,-20,40, 6);   
+//       CartesianMoveLeg (-5,diff_y,40, 2);
+//       delay (interval);      
+
+// //    
+//     //------------------------------------// Pasangan 2 tancap
+//       CartesianMoveLeg (-15,-19,-10, 4);  
+//       CartesianMoveLeg (25,-20,12, 6);   
+//       CartesianMoveLeg (-5,diff_y,2, 2);
+//       delay (interval);
+}
+
 void CartesianMoveLeg (double X, double Y, double Z, int i) {
   
   // OFFSET TO REST POSITION
 
   Y += Y_Rest;
   if(i==2 || i==5)
-  Z += Z_Rest-10;
+  Z += Z_Rest-8;
   else
   Z += Z_Rest;
 
